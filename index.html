@@ -9,7 +9,7 @@
         @import url('https://fonts.googleapis.com/css2?family=Space+Mono&display=swap');
     </style>
     <style>
-         :root {
+        :root {
             --space-base: 15px;
             --space-sm: 10px;
             --space-lg: 20px;
@@ -26,6 +26,10 @@
             --indicator-off: #444444;
             --indicator-on: var(--accent-color);
             --indicator-glow: var(--accent-glow);
+        }
+
+        * {
+            box-sizing: border-box;
         }
 
         html {
@@ -48,6 +52,7 @@
             font-size: 12px;
             letter-spacing: .1em;
         }
+
         /* Cursor during knob drag */
 
         body.dragging {
@@ -76,16 +81,20 @@
             border: 1px solid var(--grey-dark);
         }
 
+        .drum-machine-scroll-container {
+            width: 100%;
+            overflow-x: scroll;
+        }
+
         .drum-machine-panel {
-            display: grid;
-            grid-template-columns: repeat(5, auto);
-            gap: var(--space-sm) var(--space-sm);
-            min-width: 750px;
-            width: max-content;
+            display: flex;
+            gap: var(--space-sm);
             border-radius: 8px;
             margin-top: 20px;
             margin-bottom: var(--space-lg);
-            grid-template-rows: auto 1fr;
+            padding: var(--space-base);
+            justify-content: center;
+            width: max-content;
         }
 
         .header-area {
@@ -96,6 +105,7 @@
 
         .module {
             grid-row: 2;
+            flex-shrink: 0;
             padding: var(--space-base);
             display: flex;
             flex-direction: column;
@@ -262,6 +272,7 @@
             grid-column: 5;
             grid-row: 2;
         }
+
         /* --- Sequencer Styles --- */
 
         .sequencer-panel {
@@ -272,6 +283,7 @@
             flex-direction: column;
             align-items: center;
             gap: var(--space-lg);
+            width: 100%;
         }
 
         .sequencer-controls {
@@ -401,11 +413,8 @@
             grid-template-columns: repeat(16, 1fr);
             gap: 4px;
             width: calc(100% - 20px);
-            /* Adjust width to align roughly */
             max-width: 600px;
-            /* Max width for grid */
             margin: 0 auto;
-            /* Center grid */
         }
 
         .step-button {
@@ -436,202 +445,265 @@
 
 <body>
 
-    <div class="drum-machine-panel" id="drum-machine-panel">
-        <div class="header-area">
-            <h1>AH DS-02</h1>
-        </div>
-
-        <!-- Voice Modules (HTML unchanged) -->
-        <!-- Voice 1 (A) -->
-        <div class="module voice-module" id="voice-module-0">
-            <h2 class="module-heading">A</h2>
-            <div class="indicator-light" id="light-0"></div>
-            <div class="control-grid">
-                <div class="control-group"><label for="v0-pitch">Pitch</label>
-                    <div class="knob" id="v0-pitch" data-param="voices.0.pitch" data-min="20" data-max="2000" data-value="80" data-curve="log" tabindex="0"></div><span class="knob-value-display" id="v0-pitch-value"></span>
-                </div>
-                <div class="control-group"><label for="v0-wave"><span class="waveform-label"
-                            id="v0-wave-indicator">∿</span></label>
-                    <div class="knob" id="v0-wave" data-param="voices.0.wave" data-steps="sine,square,sawtooth,noise" data-value="0" tabindex="0"></div>
-                </div>
-                <div class="control-group"><label for="v0-level">Level</label>
-                    <div class="knob" id="v0-level" data-param="voices.0.level" data-min="0" data-max="1" data-value="0.8" tabindex="0"></div><span class="knob-value-display" id="v0-level-value"></span>
-                </div>
-                <div class="control-group"><label for="v0-cutoff">Cutoff</label>
-                    <div class="knob" id="v0-cutoff" data-param="voices.0.cutoff" data-min="40" data-max="20000" data-value="40" data-curve="log" tabindex="0"></div><span class="knob-value-display" id="v0-cutoff-value"></span>
-                </div>
-                <div class="adsr-grid">
-                    <div class="control-group"><label for="v0-attack">A</label>
-                        <div class="knob" id="v0-attack" data-param="voices.0.env.attack" data-min="0.001" data-max="0.05" data-value="0.001" tabindex="0"></div><span class="knob-value-display" id="v0-attack-value"></span>
+    <div class="header-area">
+        <h1>AH DS-02</h1>
+    </div>
+    <div class="drum-machine-scroll-container">
+        <div class="drum-machine-panel" id="drum-machine-panel">
+            <!-- Voice Modules (HTML unchanged) -->
+            <!-- Voice 1 (A) -->
+            <div class="module voice-module" id="voice-module-0">
+                <h2 class="module-heading">A</h2>
+                <div class="indicator-light" id="light-0"></div>
+                <div class="control-grid">
+                    <div class="control-group"><label for="v0-pitch">Pitch</label>
+                        <div class="knob" id="v0-pitch" data-param="voices.0.pitch" data-min="20" data-max="2000"
+                            data-value="80" data-curve="log" tabindex="0"></div><span class="knob-value-display"
+                            id="v0-pitch-value"></span>
                     </div>
-                    <div class="control-group"><label for="v0-decay">D</label>
-                        <div class="knob" id="v0-decay" data-param="voices.0.env.decay" data-min="0.001" data-max="0.3" data-value="0.03" tabindex="0"></div><span class="knob-value-display" id="v0-decay-value"></span>
+                    <div class="control-group"><label for="v0-wave"><span class="waveform-label"
+                                id="v0-wave-indicator">∿</span></label>
+                        <div class="knob" id="v0-wave" data-param="voices.0.wave" data-steps="sine,square,sawtooth,noise"
+                            data-value="0" tabindex="0"></div>
                     </div>
-                    <div class="control-group"><label for="v0-sustain">S</label>
-                        <div class="knob" id="v0-sustain" data-param="voices.0.env.sustain" data-min="0" data-max="1" data-value="0" tabindex="0"></div><span class="knob-value-display" id="v0-sustain-value"></span>
+                    <div class="control-group"><label for="v0-level">Level</label>
+                        <div class="knob" id="v0-level" data-param="voices.0.level" data-min="0" data-max="1"
+                            data-value="0.8" tabindex="0"></div><span class="knob-value-display" id="v0-level-value"></span>
                     </div>
-                    <div class="control-group"><label for="v0-release">R</label>
-                        <div class="knob" id="v0-release" data-param="voices.0.env.release" data-min="0.001" data-max="2" data-value="0.1" tabindex="0"></div><span class="knob-value-display" id="v0-release-value"></span>
+                    <div class="control-group"><label for="v0-cutoff">Cutoff</label>
+                        <div class="knob" id="v0-cutoff" data-param="voices.0.cutoff" data-min="40" data-max="20000"
+                            data-value="40" data-curve="log" tabindex="0"></div><span class="knob-value-display"
+                            id="v0-cutoff-value"></span>
+                    </div>
+                    <div class="adsr-grid">
+                        <div class="control-group"><label for="v0-attack">A</label>
+                            <div class="knob" id="v0-attack" data-param="voices.0.env.attack" data-min="0.001"
+                                data-max="0.05" data-value="0.001" tabindex="0"></div><span class="knob-value-display"
+                                id="v0-attack-value"></span>
+                        </div>
+                        <div class="control-group"><label for="v0-decay">D</label>
+                            <div class="knob" id="v0-decay" data-param="voices.0.env.decay" data-min="0.001" data-max="0.3"
+                                data-value="0.03" tabindex="0"></div><span class="knob-value-display"
+                                id="v0-decay-value"></span>
+                        </div>
+                        <div class="control-group"><label for="v0-sustain">S</label>
+                            <div class="knob" id="v0-sustain" data-param="voices.0.env.sustain" data-min="0" data-max="1"
+                                data-value="0" tabindex="0"></div><span class="knob-value-display"
+                                id="v0-sustain-value"></span>
+                        </div>
+                        <div class="control-group"><label for="v0-release">R</label>
+                            <div class="knob" id="v0-release" data-param="voices.0.env.release" data-min="0.001"
+                                data-max="2" data-value="0.1" tabindex="0"></div><span class="knob-value-display"
+                                id="v0-release-value"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Voice 2 (S) -->
+            <div class="module voice-module" id="voice-module-1">
+                <h2 class="module-heading">S</h2>
+                <div class="indicator-light" id="light-1"></div>
+                <div class="control-grid">
+                    <div class="control-group"><label for="v1-pitch">Pitch</label>
+                        <div class="knob" id="v1-pitch" data-param="voices.1.pitch" data-min="20" data-max="2000"
+                            data-value="180" data-curve="log" tabindex="0"></div><span class="knob-value-display"
+                            id="v1-pitch-value"></span>
+                    </div>
+                    <div class="control-group"><label for="v1-wave"><span class="waveform-label"
+                                id="v1-wave-indicator">∿</span></label>
+                        <div class="knob" id="v1-wave" data-param="voices.1.wave" data-steps="sine,square,sawtooth,noise"
+                            data-value="3" tabindex="0"></div>
+                    </div>
+                    <div class="control-group"><label for="v1-level">Level</label>
+                        <div class="knob" id="v1-level" data-param="voices.1.level" data-min="0" data-max="1"
+                            data-value="0.5" tabindex="0"></div><span class="knob-value-display" id="v1-level-value"></span>
+                    </div>
+                    <div class="control-group"><label for="v1-cutoff">Cutoff</label>
+                        <div class="knob" id="v1-cutoff" data-param="voices.1.cutoff" data-min="40" data-max="20000"
+                            data-value="100" data-curve="log" tabindex="0"></div><span class="knob-value-display"
+                            id="v1-cutoff-value"></span>
+                    </div>
+                    <div class="adsr-grid">
+                        <div class="control-group"><label for="v1-attack">A</label>
+                            <div class="knob" id="v1-attack" data-param="voices.1.env.attack" data-min="0.001"
+                                data-max="0.05" data-value="0.001" tabindex="0"></div><span class="knob-value-display"
+                                id="v1-attack-value"></span>
+                        </div>
+                        <div class="control-group"><label for="v1-decay">D</label>
+                            <div class="knob" id="v1-decay" data-param="voices.1.env.decay" data-min="0.001" data-max="0.3"
+                                data-value="0.05" tabindex="0"></div><span class="knob-value-display"
+                                id="v1-decay-value"></span>
+                        </div>
+                        <div class="control-group"><label for="v1-sustain">S</label>
+                            <div class="knob" id="v1-sustain" data-param="voices.1.env.sustain" data-min="0" data-max="1"
+                                data-value="0.2" tabindex="0"></div><span class="knob-value-display"
+                                id="v1-sustain-value"></span>
+                        </div>
+                        <div class="control-group"><label for="v1-release">R</label>
+                            <div class="knob" id="v1-release" data-param="voices.1.env.release" data-min="0.001"
+                                data-max="2" data-value="0.2" tabindex="0"></div><span class="knob-value-display"
+                                id="v1-release-value"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Voice 3 (D) -->
+            <div class="module voice-module" id="voice-module-2">
+                <h2 class="module-heading">D</h2>
+                <div class="indicator-light" id="light-2"></div>
+                <div class="control-grid">
+                    <div class="control-group"><label for="v2-pitch">Pitch</label>
+                        <div class="knob" id="v2-pitch" data-param="voices.2.pitch" data-min="20" data-max="4000"
+                            data-value="800" data-curve="log" tabindex="0"></div><span class="knob-value-display"
+                            id="v2-pitch-value"></span>
+                    </div>
+                    <div class="control-group"><label for="v2-wave"><span class="waveform-label"
+                                id="v2-wave-indicator">∿</span></label>
+                        <div class="knob" id="v2-wave" data-param="voices.2.wave" data-steps="sine,square,sawtooth,noise"
+                            data-value="3" tabindex="0"></div>
+                    </div>
+                    <div class="control-group"><label for="v2-level">Level</label>
+                        <div class="knob" id="v2-level" data-param="voices.2.level" data-min="0" data-max="1"
+                            data-value="0.5" tabindex="0"></div><span class="knob-value-display" id="v2-level-value"></span>
+                    </div>
+                    <div class="control-group"><label for="v2-cutoff">Cutoff</label>
+                        <div class="knob" id="v2-cutoff" data-param="voices.2.cutoff" data-min="40" data-max="20000"
+                            data-value="5000" data-curve="log" tabindex="0"></div><span class="knob-value-display"
+                            id="v2-cutoff-value"></span>
+                    </div>
+                    <div class="adsr-grid">
+                        <div class="control-group"><label for="v2-attack">A</label>
+                            <div class="knob" id="v2-attack" data-param="voices.2.env.attack" data-min="0.001"
+                                data-max="0.5" data-value="0.001" tabindex="0"></div><span class="knob-value-display"
+                                id="v2-attack-value"></span>
+                        </div>
+                        <div class="control-group"><label for="v2-decay">D</label>
+                            <div class="knob" id="v2-decay" data-param="voices.2.env.decay" data-min="0.001" data-max="0.3"
+                                data-value="0.03" tabindex="0"></div><span class="knob-value-display"
+                                id="v2-decay-value"></span>
+                        </div>
+                        <div class="control-group"><label for="v2-sustain">S</label>
+                            <div class="knob" id="v2-sustain" data-param="voices.2.env.sustain" data-min="0" data-max="1"
+                                data-value="0" tabindex="0"></div><span class="knob-value-display"
+                                id="v2-sustain-value"></span>
+                        </div>
+                        <div class="control-group"><label for="v2-release">R</label>
+                            <div class="knob" id="v2-release" data-param="voices.2.env.release" data-min="0.001"
+                                data-max="1" data-value="0.1" tabindex="0"></div><span class="knob-value-display"
+                                id="v2-release-value"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Voice 4 (F) -->
+            <div class="module voice-module" id="voice-module-3">
+                <h2 class="module-heading">F</h2>
+                <div class="indicator-light" id="light-3"></div>
+                <div class="control-grid">
+                    <div class="control-group"><label for="v3-pitch">Pitch</label>
+                        <div class="knob" id="v3-pitch" data-param="voices.3.pitch" data-min="100" data-max="8000"
+                            data-value="3500" data-curve="log" tabindex="0"></div><span class="knob-value-display"
+                            id="v3-pitch-value"></span>
+                    </div>
+                    <div class="control-group"><label for="v3-wave"><span class="waveform-label"
+                                id="v3-wave-indicator">∿</span></label>
+                        <div class="knob" id="v3-wave" data-param="voices.3.wave" data-steps="sine,square,sawtooth,noise"
+                            data-value="3" tabindex="0"></div>
+                    </div>
+                    <div class="control-group"><label for="v3-level">Level</label>
+                        <div class="knob" id="v3-level" data-param="voices.3.level" data-min="0" data-max="1"
+                            data-value="0.5" tabindex="0"></div><span class="knob-value-display" id="v3-level-value"></span>
+                    </div>
+                    <div class="control-group"><label for="v3-cutoff">Cutoff</label>
+                        <div class="knob" id="v3-cutoff" data-param="voices.3.cutoff" data-min="40" data-max="20000"
+                            data-value="5000" data-curve="log" tabindex="0"></div><span class="knob-value-display"
+                            id="v3-cutoff-value"></span>
+                    </div>
+                    <div class="adsr-grid">
+                        <div class="control-group"><label for="v3-attack">A</label>
+                            <div class="knob" id="v3-attack" data-param="voices.3.env.attack" data-min="0.001"
+                                data-max="0.2" data-value="0.001" tabindex="0"></div><span class="knob-value-display"
+                                id="v3-attack-value"></span>
+                        </div>
+                        <div class="control-group"><label for="v3-decay">D</label>
+                            <div class="knob" id="v3-decay" data-param="voices.3.env.decay" data-min="0.001" data-max="0.5"
+                                data-value="0.3" tabindex="0"></div><span class="knob-value-display"
+                                id="v3-decay-value"></span>
+                        </div>
+                        <div class="control-group"><label for="v3-sustain">S</label>
+                            <div class="knob" id="v3-sustain" data-param="voices.3.env.sustain" data-min="0" data-max="1"
+                                data-value="0" tabindex="0"></div><span class="knob-value-display"
+                                id="v3-sustain-value"></span>
+                        </div>
+                        <div class="control-group"><label for="v3-release">R</label>
+                            <div class="knob" id="v3-release" data-param="voices.3.env.release" data-min="0.001"
+                                data-max="0.5" data-value="0.03" tabindex="0"></div><span class="knob-value-display"
+                                id="v3-release-value"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Effects & Master (HTML unchanged) -->
+            <div class="module" id="effects-master-module">
+                <div class="effects-control-row">
+                    <div class="control-group">
+                        <label for="delay-time">Dly Time</label>
+                        <div class="knob" id="delay-time" data-param="effects.delay.time" data-min="0.01" data-max="1"
+                            data-value="0.15" data-curve="log" tabindex="0"></div>
+                        <span class="knob-value-display" id="delay-time-value"></span>
+                    </div>
+                    <div class="control-group">
+                        <label for="delay-feedback">Dly Fdbk</label>
+                        <div class="knob" id="delay-feedback" data-param="effects.delay.feedback" data-min="0"
+                            data-max="0.95" data-value=".4" tabindex="0"></div>
+                        <span class="knob-value-display" id="delay-feedback-value"></span>
+                    </div>
+                </div>
+                <div class="effects-control-row">
+                    <div class="control-group">
+                        <label for="delay-level">Dly Level</label>
+                        <div class="knob" id="delay-level" data-param="effects.delay.level" data-min="0" data-max="1"
+                            data-value="0" tabindex="0"></div><span class="knob-value-display"
+                            id="delay-level-value"></span>
+                    </div>
+                    <div class="control-group">
+                        <label for="reverb-level">Reverb</label>
+                        <div class="knob" id="reverb-level" data-param="effects.reverb.level" data-min="0" data-max="1.5"
+                            data-value="0" tabindex="0"></div>
+                        <span class="knob-value-display" id="reverb-level-value"></span>
+                    </div>
+                </div>
+                <div style="margin-top: auto;" class="effects-control-row">
+                    <div class="control-group">
+                        <label for="distortion-amount">Drive</label>
+                        <div class="knob" id="distortion-amount" data-param="effects.distortion.amount" data-min="0"
+                            data-max="100" data-value="0" tabindex="0"></div>
+                        <span class="knob-value-display" id="distortion-amount-value"></span>
+                    </div>
+                    <div class="control-group">
+                        <label for="volume">Volume</label>
+                        <div class="knob" id="volume" data-param="masterVolume" data-min="0" data-max="1" data-value="0.6"
+                            tabindex="0"></div><span class="knob-value-display" id="volume-value"></span>
                     </div>
                 </div>
             </div>
         </div>
-        <!-- Voice 2 (S) -->
-        <div class="module voice-module" id="voice-module-1">
-            <h2 class="module-heading">S</h2>
-            <div class="indicator-light" id="light-1"></div>
-            <div class="control-grid">
-                <div class="control-group"><label for="v1-pitch">Pitch</label>
-                    <div class="knob" id="v1-pitch" data-param="voices.1.pitch" data-min="20" data-max="2000" data-value="180" data-curve="log" tabindex="0"></div><span class="knob-value-display" id="v1-pitch-value"></span>
-                </div>
-                <div class="control-group"><label for="v1-wave"><span class="waveform-label"
-                            id="v1-wave-indicator">∿</span></label>
-                    <div class="knob" id="v1-wave" data-param="voices.1.wave" data-steps="sine,square,sawtooth,noise" data-value="3" tabindex="0"></div>
-                </div>
-                <div class="control-group"><label for="v1-level">Level</label>
-                    <div class="knob" id="v1-level" data-param="voices.1.level" data-min="0" data-max="1" data-value="0.5" tabindex="0"></div><span class="knob-value-display" id="v1-level-value"></span>
-                </div>
-                <div class="control-group"><label for="v1-cutoff">Cutoff</label>
-                    <div class="knob" id="v1-cutoff" data-param="voices.1.cutoff" data-min="40" data-max="20000" data-value="100" data-curve="log" tabindex="0"></div><span class="knob-value-display" id="v1-cutoff-value"></span>
-                </div>
-                <div class="adsr-grid">
-                    <div class="control-group"><label for="v1-attack">A</label>
-                        <div class="knob" id="v1-attack" data-param="voices.1.env.attack" data-min="0.001" data-max="0.05" data-value="0.001" tabindex="0"></div><span class="knob-value-display" id="v1-attack-value"></span>
-                    </div>
-                    <div class="control-group"><label for="v1-decay">D</label>
-                        <div class="knob" id="v1-decay" data-param="voices.1.env.decay" data-min="0.001" data-max="0.3" data-value="0.05" tabindex="0"></div><span class="knob-value-display" id="v1-decay-value"></span>
-                    </div>
-                    <div class="control-group"><label for="v1-sustain">S</label>
-                        <div class="knob" id="v1-sustain" data-param="voices.1.env.sustain" data-min="0" data-max="1" data-value="0.2" tabindex="0"></div><span class="knob-value-display" id="v1-sustain-value"></span>
-                    </div>
-                    <div class="control-group"><label for="v1-release">R</label>
-                        <div class="knob" id="v1-release" data-param="voices.1.env.release" data-min="0.001" data-max="2" data-value="0.2" tabindex="0"></div><span class="knob-value-display" id="v1-release-value"></span>
-                    </div>
-                </div>
+    </div>
+    <!-- Sequencer Panel -->
+    <div class="sequencer-panel" id="sequencer-panel">
+        <div class="sequencer-controls">
+            <button id="play-stop-button" class="seq-button">▶︎</button>
+            <div class="tempo-control">
+                <input type="number" id="tempo-input" class="tempo-input" value="120" min="30" max="300">
             </div>
+            <button id="reset-button" class="seq-button">⨂</button>
         </div>
-        <!-- Voice 3 (D) -->
-        <div class="module voice-module" id="voice-module-2">
-            <h2 class="module-heading">D</h2>
-            <div class="indicator-light" id="light-2"></div>
-            <div class="control-grid">
-                <div class="control-group"><label for="v2-pitch">Pitch</label>
-                    <div class="knob" id="v2-pitch" data-param="voices.2.pitch" data-min="20" data-max="4000" data-value="800" data-curve="log" tabindex="0"></div><span class="knob-value-display" id="v2-pitch-value"></span>
-                </div>
-                <div class="control-group"><label for="v2-wave"><span class="waveform-label"
-                            id="v2-wave-indicator">∿</span></label>
-                    <div class="knob" id="v2-wave" data-param="voices.2.wave" data-steps="sine,square,sawtooth,noise" data-value="3" tabindex="0"></div>
-                </div>
-                <div class="control-group"><label for="v2-level">Level</label>
-                    <div class="knob" id="v2-level" data-param="voices.2.level" data-min="0" data-max="1" data-value="0.5" tabindex="0"></div><span class="knob-value-display" id="v2-level-value"></span>
-                </div>
-                <div class="control-group"><label for="v2-cutoff">Cutoff</label>
-                    <div class="knob" id="v2-cutoff" data-param="voices.2.cutoff" data-min="40" data-max="20000" data-value="5000" data-curve="log" tabindex="0"></div><span class="knob-value-display" id="v2-cutoff-value"></span>
-                </div>
-                <div class="adsr-grid">
-                    <div class="control-group"><label for="v2-attack">A</label>
-                        <div class="knob" id="v2-attack" data-param="voices.2.env.attack" data-min="0.001" data-max="0.5" data-value="0.001" tabindex="0"></div><span class="knob-value-display" id="v2-attack-value"></span>
-                    </div>
-                    <div class="control-group"><label for="v2-decay">D</label>
-                        <div class="knob" id="v2-decay" data-param="voices.2.env.decay" data-min="0.001" data-max="0.3" data-value="0.03" tabindex="0"></div><span class="knob-value-display" id="v2-decay-value"></span>
-                    </div>
-                    <div class="control-group"><label for="v2-sustain">S</label>
-                        <div class="knob" id="v2-sustain" data-param="voices.2.env.sustain" data-min="0" data-max="1" data-value="0" tabindex="0"></div><span class="knob-value-display" id="v2-sustain-value"></span>
-                    </div>
-                    <div class="control-group"><label for="v2-release">R</label>
-                        <div class="knob" id="v2-release" data-param="voices.2.env.release" data-min="0.001" data-max="1" data-value="0.1" tabindex="0"></div><span class="knob-value-display" id="v2-release-value"></span>
-                    </div>
-                </div>
+        <div class="sequencer-grid-container">
+            <div class="step-indicator-row" id="step-indicator-row">
+                <!-- Indicators will be generated by JS -->
             </div>
-        </div>
-        <!-- Voice 4 (F) -->
-        <div class="module voice-module" id="voice-module-3">
-            <h2 class="module-heading">F</h2>
-            <div class="indicator-light" id="light-3"></div>
-            <div class="control-grid">
-                <div class="control-group"><label for="v3-pitch">Pitch</label>
-                    <div class="knob" id="v3-pitch" data-param="voices.3.pitch" data-min="100" data-max="8000" data-value="3500" data-curve="log" tabindex="0"></div><span class="knob-value-display" id="v3-pitch-value"></span>
-                </div>
-                <div class="control-group"><label for="v3-wave"><span class="waveform-label"
-                            id="v3-wave-indicator">∿</span></label>
-                    <div class="knob" id="v3-wave" data-param="voices.3.wave" data-steps="sine,square,sawtooth,noise" data-value="3" tabindex="0"></div>
-                </div>
-                <div class="control-group"><label for="v3-level">Level</label>
-                    <div class="knob" id="v3-level" data-param="voices.3.level" data-min="0" data-max="1" data-value="0.5" tabindex="0"></div><span class="knob-value-display" id="v3-level-value"></span>
-                </div>
-                <div class="control-group"><label for="v3-cutoff">Cutoff</label>
-                    <div class="knob" id="v3-cutoff" data-param="voices.3.cutoff" data-min="40" data-max="20000" data-value="5000" data-curve="log" tabindex="0"></div><span class="knob-value-display" id="v3-cutoff-value"></span>
-                </div>
-                <div class="adsr-grid">
-                    <div class="control-group"><label for="v3-attack">A</label>
-                        <div class="knob" id="v3-attack" data-param="voices.3.env.attack" data-min="0.001" data-max="0.2" data-value="0.001" tabindex="0"></div><span class="knob-value-display" id="v3-attack-value"></span>
-                    </div>
-                    <div class="control-group"><label for="v3-decay">D</label>
-                        <div class="knob" id="v3-decay" data-param="voices.3.env.decay" data-min="0.001" data-max="0.5" data-value="0.3" tabindex="0"></div><span class="knob-value-display" id="v3-decay-value"></span>
-                    </div>
-                    <div class="control-group"><label for="v3-sustain">S</label>
-                        <div class="knob" id="v3-sustain" data-param="voices.3.env.sustain" data-min="0" data-max="1" data-value="0" tabindex="0"></div><span class="knob-value-display" id="v3-sustain-value"></span>
-                    </div>
-                    <div class="control-group"><label for="v3-release">R</label>
-                        <div class="knob" id="v3-release" data-param="voices.3.env.release" data-min="0.001" data-max="0.5" data-value="0.03" tabindex="0"></div><span class="knob-value-display" id="v3-release-value"></span>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- Effects & Master (HTML unchanged) -->
-        <div class="module" id="effects-master-module">
-            <div class="effects-control-row">
-                <div class="control-group">
-                    <label for="delay-time">Dly Time</label>
-                    <div class="knob" id="delay-time" data-param="effects.delay.time" data-min="0.01" data-max="1" data-value="0.15" data-curve="log" tabindex="0"></div>
-                    <span class="knob-value-display" id="delay-time-value"></span>
-                </div>
-                <div class="control-group">
-                    <label for="delay-feedback">Dly Fdbk</label>
-                    <div class="knob" id="delay-feedback" data-param="effects.delay.feedback" data-min="0" data-max="0.95" data-value=".4" tabindex="0"></div>
-                    <span class="knob-value-display" id="delay-feedback-value"></span>
-                </div>
-            </div>
-            <div class="effects-control-row">
-                <div class="control-group">
-                    <label for="delay-level">Dly Level</label>
-                    <div class="knob" id="delay-level" data-param="effects.delay.level" data-min="0" data-max="1" data-value="0" tabindex="0"></div><span class="knob-value-display" id="delay-level-value"></span>
-                </div>
-                <div class="control-group">
-                    <label for="reverb-level">Reverb</label>
-                    <div class="knob" id="reverb-level" data-param="effects.reverb.level" data-min="0" data-max="1.5" data-value="0" tabindex="0"></div>
-                    <span class="knob-value-display" id="reverb-level-value"></span>
-                </div>
-            </div>
-            <div style="margin-top: auto;" class="effects-control-row">
-                <div class="control-group">
-                    <label for="distortion-amount">Drive</label>
-                    <div class="knob" id="distortion-amount" data-param="effects.distortion.amount" data-min="0" data-max="100" data-value="0" tabindex="0"></div>
-                    <span class="knob-value-display" id="distortion-amount-value"></span>
-                </div>
-                <div class="control-group">
-                    <label for="volume">Volume</label>
-                    <div class="knob" id="volume" data-param="masterVolume" data-min="0" data-max="1" data-value="0.6" tabindex="0"></div><span class="knob-value-display" id="volume-value"></span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Sequencer Panel -->
-        <div class="sequencer-panel" id="sequencer-panel">
-            <div class="sequencer-controls">
-                <button id="play-stop-button" class="seq-button">▶︎</button>
-                <div class="tempo-control">
-                    <input type="number" id="tempo-input" class="tempo-input" value="120" min="30" max="300">
-                </div>
-                <button id="reset-button" class="seq-button">⨂</button>
-            </div>
-            <div class="sequencer-grid-container">
-                <div class="step-indicator-row" id="step-indicator-row">
-                    <!-- Indicators will be generated by JS -->
-                </div>
-                <div class="sequencer-grid" id="sequencer-grid">
-                    <!-- Step buttons will be generated by JS -->
-                </div>
+            <div class="sequencer-grid" id="sequencer-grid">
+                <!-- Step buttons will be generated by JS -->
             </div>
         </div>
     </div>
@@ -705,10 +777,10 @@
 
         // ----- UTILITY FUNCTIONS -----
         // (createNoiseBuffer, makeDistortionCurve, formatKnobValue, updateKnobValueDisplay - unchanged)
-        function createNoiseBuffer(context){const bufferSize=context.sampleRate*2;const buffer=context.createBuffer(1,bufferSize,context.sampleRate);const output=buffer.getChannelData(0);for(let i=0;i<bufferSize;i++){output[i]=Math.random()*2-1;}return buffer;}
-        function makeDistortionCurve(amount,context){if(!context)return null;const k=Math.max(0,amount);const n_samples=44100;const curve=new Float32Array(n_samples);const curveSharpness=1+(k/100)*5;for(let i=0;i<n_samples;++i){let x=i*2/n_samples-1;curve[i]=Math.tanh(x*curveSharpness);}return curve;}
-        function formatKnobValue(value,knobId){if(typeof value!=='number'||!isFinite(value))return'---';if(knobId){if(knobId.includes('attack')||knobId.includes('decay')||knobId.includes('release')||knobId.includes('delay-time')){return value<1?(value*1000).toFixed(0)+'ms':value.toFixed(2)+'s';}else if(knobId.includes('pitch')||knobId.includes('cutoff')){return value>=1000?(value/1000).toFixed(1)+'k':value.toFixed(0);}else if(knobId.includes('level')||knobId.includes('feedback')||knobId.includes('sustain')||knobId.includes('volume')||knobId.includes('reverb-level')){return value.toFixed(2);}else if(knobId.includes('distortion-amount')){return value.toFixed(0);}}return value.toFixed(2);}
-        function updateKnobValueDisplay(knob,value){if(knob&&!knob.dataset.steps){const displayId=knob.id+'-value';const displayElement=document.getElementById(displayId);if(displayElement){displayElement.textContent=formatKnobValue(value,knob.id);}}}
+        function createNoiseBuffer(context) { const bufferSize = context.sampleRate * 2; const buffer = context.createBuffer(1, bufferSize, context.sampleRate); const output = buffer.getChannelData(0); for (let i = 0; i < bufferSize; i++) { output[i] = Math.random() * 2 - 1; } return buffer; }
+        function makeDistortionCurve(amount, context) { if (!context) return null; const k = Math.max(0, amount); const n_samples = 44100; const curve = new Float32Array(n_samples); const curveSharpness = 1 + (k / 100) * 5; for (let i = 0; i < n_samples; ++i) { let x = i * 2 / n_samples - 1; curve[i] = Math.tanh(x * curveSharpness); } return curve; }
+        function formatKnobValue(value, knobId) { if (typeof value !== 'number' || !isFinite(value)) return '---'; if (knobId) { if (knobId.includes('attack') || knobId.includes('decay') || knobId.includes('release') || knobId.includes('delay-time')) { return value < 1 ? (value * 1000).toFixed(0) + 'ms' : value.toFixed(2) + 's'; } else if (knobId.includes('pitch') || knobId.includes('cutoff')) { return value >= 1000 ? (value / 1000).toFixed(1) + 'k' : value.toFixed(0); } else if (knobId.includes('level') || knobId.includes('feedback') || knobId.includes('sustain') || knobId.includes('volume') || knobId.includes('reverb-level')) { return value.toFixed(2); } else if (knobId.includes('distortion-amount')) { return value.toFixed(0); } } return value.toFixed(2); }
+        function updateKnobValueDisplay(knob, value) { if (knob && !knob.dataset.steps) { const displayId = knob.id + '-value'; const displayElement = document.getElementById(displayId); if (displayElement) { displayElement.textContent = formatKnobValue(value, knob.id); } } }
 
         // ----- AUDIO CONTEXT & INITIALIZATION -----
         async function ensureAudioContextResumed() { // (unchanged)
@@ -749,15 +821,15 @@
                 noiseBuffer = createNoiseBuffer(audioContext);
 
                 // Create MONO Reverb Impulse
-                 const reverbTime = 2, decay = 4.0, sampleRate = audioContext.sampleRate;
-                 const length = sampleRate * reverbTime;
-                 const impulse = audioContext.createBuffer(1, length, sampleRate); // Mono impulse
-                 const impulseData = impulse.getChannelData(0);
-                 for (let i = 0; i < length; i++) {
-                      const envelope = Math.pow(1 - i / length, decay);
-                      impulseData[i] = (Math.random() * 2 - 1) * envelope;
-                 }
-                 reverb.buffer = impulse;
+                const reverbTime = 2, decay = 4.0, sampleRate = audioContext.sampleRate;
+                const length = sampleRate * reverbTime;
+                const impulse = audioContext.createBuffer(1, length, sampleRate); // Mono impulse
+                const impulseData = impulse.getChannelData(0);
+                for (let i = 0; i < length; i++) {
+                    const envelope = Math.pow(1 - i / length, decay);
+                    impulseData[i] = (Math.random() * 2 - 1) * envelope;
+                }
+                reverb.buffer = impulse;
 
                 // Configure Reverb Filter (optional, makes reverb darker)
                 reverbLPF.type = 'lowpass';
@@ -895,13 +967,13 @@
 
         // ----- SEQUENCER LOGIC -----
         // (scheduleNotes, sequencerScheduler, playSequencer, stopSequencer, togglePlayStop, updateTempo, resetSequencer - unchanged)
-        function scheduleNotes(currentStep,currentTime){sequencer.stepDuration=60.0/sequencer.tempo/4.0;while(sequencer.nextStepTime<currentTime+sequencer.scheduleAheadTime){const stepIndex=sequencer.currentStep;const stepTime=sequencer.nextStepTime;for(let voiceIndex=0;voiceIndex<NUM_VOICES;voiceIndex++){if(sequencer.steps[voiceIndex][stepIndex]===1){triggerDrumSound(voiceIndex,stepTime);}}updateStepIndicator(stepIndex);sequencer.nextStepTime+=sequencer.stepDuration;sequencer.currentStep=(sequencer.currentStep+1)%NUM_STEPS;}}
-        function sequencerScheduler(){if(!sequencer.isPlaying)return;const currentTime=audioContext.currentTime;scheduleNotes(sequencer.currentStep,currentTime);sequencer.timerId=setTimeout(sequencerScheduler,sequencer.lookahead);}
-        function playSequencer(){if(!isAudioInitialized||!isAudioResumed){console.warn("Audio not ready, cannot start sequencer.");ensureAudioContextResumed().then(resumed=>{if(resumed)playSequencer();});return;}if(sequencer.isPlaying)return;sequencer.isPlaying=true;sequencer.currentStep=0;sequencer.nextStepTime=audioContext.currentTime+0.05;sequencerScheduler();playStopButton.textContent="⏹";playStopButton.classList.add("playing");}
-        function stopSequencer(){if(!sequencer.isPlaying)return;sequencer.isPlaying=false;clearTimeout(sequencer.timerId);sequencer.timerId=null;playStopButton.textContent="▶︎";playStopButton.classList.remove("playing");clearStepIndicators();}
-        function togglePlayStop(){if(sequencer.isPlaying){stopSequencer();}else{playSequencer();}}
-        function updateTempo(newTempo){const clampedTempo=Math.max(30,Math.min(300,newTempo));sequencer.tempo=clampedTempo;tempoInput.value=clampedTempo;}
-        function resetSequencer(){stopSequencer();for(let v=0;v<NUM_VOICES;v++){for(let s=0;s<NUM_STEPS;s++){sequencer.steps[v][s]=0;stepButtons[v][s].classList.remove('active');}}sequencer.currentStep=0;clearStepIndicators();console.log("Sequencer Reset.");}
+        function scheduleNotes(currentStep, currentTime) { sequencer.stepDuration = 60.0 / sequencer.tempo / 4.0; while (sequencer.nextStepTime < currentTime + sequencer.scheduleAheadTime) { const stepIndex = sequencer.currentStep; const stepTime = sequencer.nextStepTime; for (let voiceIndex = 0; voiceIndex < NUM_VOICES; voiceIndex++) { if (sequencer.steps[voiceIndex][stepIndex] === 1) { triggerDrumSound(voiceIndex, stepTime); } } updateStepIndicator(stepIndex); sequencer.nextStepTime += sequencer.stepDuration; sequencer.currentStep = (sequencer.currentStep + 1) % NUM_STEPS; } }
+        function sequencerScheduler() { if (!sequencer.isPlaying) return; const currentTime = audioContext.currentTime; scheduleNotes(sequencer.currentStep, currentTime); sequencer.timerId = setTimeout(sequencerScheduler, sequencer.lookahead); }
+        function playSequencer() { if (!isAudioInitialized || !isAudioResumed) { console.warn("Audio not ready, cannot start sequencer."); ensureAudioContextResumed().then(resumed => { if (resumed) playSequencer(); }); return; } if (sequencer.isPlaying) return; sequencer.isPlaying = true; sequencer.currentStep = 0; sequencer.nextStepTime = audioContext.currentTime + 0.05; sequencerScheduler(); playStopButton.textContent = "⏹"; playStopButton.classList.add("playing"); }
+        function stopSequencer() { if (!sequencer.isPlaying) return; sequencer.isPlaying = false; clearTimeout(sequencer.timerId); sequencer.timerId = null; playStopButton.textContent = "▶︎"; playStopButton.classList.remove("playing"); clearStepIndicators(); }
+        function togglePlayStop() { if (sequencer.isPlaying) { stopSequencer(); } else { playSequencer(); } }
+        function updateTempo(newTempo) { const clampedTempo = Math.max(30, Math.min(300, newTempo)); sequencer.tempo = clampedTempo; tempoInput.value = clampedTempo; }
+        function resetSequencer() { stopSequencer(); for (let v = 0; v < NUM_VOICES; v++) { for (let s = 0; s < NUM_STEPS; s++) { sequencer.steps[v][s] = 0; stepButtons[v][s].classList.remove('active'); } } sequencer.currentStep = 0; clearStepIndicators(); console.log("Sequencer Reset."); }
 
         // --- Step State Management (unchanged) ---
         function getStepState(voiceIndex, stepIndex) { return sequencer.steps[voiceIndex][stepIndex] === 1; }
@@ -911,19 +983,19 @@
         // (createSequencerGridUI, lastIndicatorUpdate, updateStepIndicator, clearStepIndicators - unchanged)
         function createSequencerGridUI() { stepIndicatorRow.innerHTML = ''; stepIndicators = []; for (let i = 0; i < NUM_STEPS; i++) { const indicator = document.createElement('div'); indicator.classList.add('step-indicator'); indicator.id = `step-indicator-${i}`; stepIndicatorRow.appendChild(indicator); stepIndicators.push(indicator); } sequencerGrid.innerHTML = ''; stepButtons = []; for (let v = 0; v < NUM_VOICES; v++) { stepButtons[v] = []; for (let s = 0; s < NUM_STEPS; s++) { const button = document.createElement('button'); button.classList.add('step-button'); button.dataset.voice = v; button.dataset.step = s; sequencerGrid.appendChild(button); stepButtons[v].push(button); } } }
         let lastIndicatorUpdate = { step: -1, timeoutId: null };
-        function updateStepIndicator(stepIndex) { if (lastIndicatorUpdate.timeoutId) { clearTimeout(lastIndicatorUpdate.timeoutId); if(lastIndicatorUpdate.step >= 0 && lastIndicatorUpdate.step < NUM_STEPS) { stepIndicators[lastIndicatorUpdate.step]?.classList.remove('active'); for(let v = 0; v < NUM_VOICES; v++){ stepButtons[v][lastIndicatorUpdate.step]?.classList.remove('playing'); } } } if(stepIndex >= 0 && stepIndex < NUM_STEPS) { stepIndicators[stepIndex]?.classList.add('active'); for(let v = 0; v < NUM_VOICES; v++){ stepButtons[v][stepIndex]?.classList.add('playing'); } } const indicatorOffDelay = (sequencer.stepDuration * 1000) * 0.8; lastIndicatorUpdate.step = stepIndex; lastIndicatorUpdate.timeoutId = setTimeout(() => { if(stepIndex >= 0 && stepIndex < NUM_STEPS) { stepIndicators[stepIndex]?.classList.remove('active'); for(let v = 0; v < NUM_VOICES; v++){ stepButtons[v][stepIndex]?.classList.remove('playing'); } } lastIndicatorUpdate.timeoutId = null; }, indicatorOffDelay); }
-        function clearStepIndicators(){if(lastIndicatorUpdate.timeoutId){clearTimeout(lastIndicatorUpdate.timeoutId);lastIndicatorUpdate.timeoutId=null;}stepIndicators.forEach(ind=>ind.classList.remove('active'));stepButtons.flat().forEach(btn=>btn.classList.remove('playing'));lastIndicatorUpdate.step=-1;}
+        function updateStepIndicator(stepIndex) { if (lastIndicatorUpdate.timeoutId) { clearTimeout(lastIndicatorUpdate.timeoutId); if (lastIndicatorUpdate.step >= 0 && lastIndicatorUpdate.step < NUM_STEPS) { stepIndicators[lastIndicatorUpdate.step]?.classList.remove('active'); for (let v = 0; v < NUM_VOICES; v++) { stepButtons[v][lastIndicatorUpdate.step]?.classList.remove('playing'); } } } if (stepIndex >= 0 && stepIndex < NUM_STEPS) { stepIndicators[stepIndex]?.classList.add('active'); for (let v = 0; v < NUM_VOICES; v++) { stepButtons[v][stepIndex]?.classList.add('playing'); } } const indicatorOffDelay = (sequencer.stepDuration * 1000) * 0.8; lastIndicatorUpdate.step = stepIndex; lastIndicatorUpdate.timeoutId = setTimeout(() => { if (stepIndex >= 0 && stepIndex < NUM_STEPS) { stepIndicators[stepIndex]?.classList.remove('active'); for (let v = 0; v < NUM_VOICES; v++) { stepButtons[v][stepIndex]?.classList.remove('playing'); } } lastIndicatorUpdate.timeoutId = null; }, indicatorOffDelay); }
+        function clearStepIndicators() { if (lastIndicatorUpdate.timeoutId) { clearTimeout(lastIndicatorUpdate.timeoutId); lastIndicatorUpdate.timeoutId = null; } stepIndicators.forEach(ind => ind.classList.remove('active')); stepButtons.flat().forEach(btn => btn.classList.remove('playing')); lastIndicatorUpdate.step = -1; }
 
         // ----- EVENT LISTENERS -----
         // (Keyboard listener - unchanged)
         document.addEventListener('keydown', async (e) => { if (e.repeat || e.metaKey || e.ctrlKey || e.altKey) return; if (e.code === 'Space') { e.preventDefault(); togglePlayStop(); return; } const voiceIndex = keyToVoiceIndex[e.code]; if (voiceIndex !== undefined) { e.preventDefault(); let canPlay = isAudioResumed; if (!canPlay && isAudioInitialized) canPlay = await ensureAudioContextResumed(); if (canPlay) { triggerDrumSound(voiceIndex, audioContext.currentTime); const light = indicatorLights[voiceIndex]; if (light) { light.classList.add('active'); setTimeout(() => light.classList.remove('active'), 100); } } else { console.warn("Audio context not running for manual trigger."); } return; } if (document.activeElement && document.activeElement.classList.contains('knob')) { const focusedKnob = document.activeElement; if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { e.preventDefault(); handleKnobArrowKey(focusedKnob, e.key === 'ArrowLeft' ? -1 : 1, e.shiftKey); } else if (e.key >= '0' && e.key <= '9') { e.preventDefault(); handleKnobNumberKey(focusedKnob, parseInt(e.key, 10)); } } });
-         // (Knob Keyboard Control Helpers - unchanged)
-          function getKnobPercentage(knob){const min=parseFloat(knob.dataset.min);const max=parseFloat(knob.dataset.max);const steps=knob.dataset.steps?knob.dataset.steps.split(','):null;const isLog=knob.dataset.curve==='log'&&min>0;let currentValueStr=knob.dataset.value;let percentage=0.5;if(currentValueStr===undefined||currentValueStr===null)return 0.5;if(steps){const numSteps=steps.length;const stepIndex=parseInt(currentValueStr);percentage=numSteps>1?stepIndex/(numSteps-1):0.5;}else{let currentValue=parseFloat(knob.dataset.actualValue||currentValueStr);if(isLog){if(currentValue<=min)percentage=0;else if(currentValue>=max)percentage=1;else percentage=Math.log(currentValue/min)/Math.log(max/min);}else{const range=max-min;percentage=range>0?(currentValue-min)/range:0.5;}}return Math.max(0,Math.min(1,isNaN(percentage)?0.5:percentage));}
-          function handleKnobArrowKey(knob,direction,isShift){const steps=knob.dataset.steps?knob.dataset.steps.split(','):null;const min=parseFloat(knob.dataset.min);const max=parseFloat(knob.dataset.max);const isLog=knob.dataset.curve==='log'&&min>0;let currentPercentage=getKnobPercentage(knob);let newValue;if(steps){const numSteps=steps.length;let currentStepIndex=Math.round(currentPercentage*(numSteps-1));let stepChange=direction*(isShift?2:1);newValue=Math.max(0,Math.min(numSteps-1,currentStepIndex+stepChange));}else{let percentageChange=direction*(isShift?0.1:0.01);let newPercentage=Math.max(0,Math.min(1,currentPercentage+percentageChange));if(isLog){newValue=min*Math.pow(max/min,newPercentage);}else{const range=max-min;newValue=min+newPercentage*range;}newValue=Math.max(min,Math.min(max,newValue));}updateParameterFromKnob(knob,newValue);}
-          function handleKnobNumberKey(knob,number){const steps=knob.dataset.steps?knob.dataset.steps.split(','):null;const min=parseFloat(knob.dataset.min);const max=parseFloat(knob.dataset.max);const isLog=knob.dataset.curve==='log'&&min>0;let targetValue;if(steps){const numSteps=steps.length;if(numSteps===0)return;let targetIndex=(number===0)?numSteps-1:number-1;targetValue=Math.max(0,Math.min(numSteps-1,targetIndex));}else{let currentActualValue=parseFloat(knob.dataset.actualValue||knob.dataset.value||'0');const epsilon=1e-7;let targetPercentage=(number===0)?(Math.abs(currentActualValue-min)<epsilon?1.0:0.0):number/10.0;if(isLog){targetValue=min*Math.pow(max/min,targetPercentage);}else{const range=max-min;targetValue=min+targetPercentage*range;}targetValue=Math.max(min,Math.min(max,targetValue));}updateParameterFromKnob(knob,targetValue);}
+        // (Knob Keyboard Control Helpers - unchanged)
+        function getKnobPercentage(knob) { const min = parseFloat(knob.dataset.min); const max = parseFloat(knob.dataset.max); const steps = knob.dataset.steps ? knob.dataset.steps.split(',') : null; const isLog = knob.dataset.curve === 'log' && min > 0; let currentValueStr = knob.dataset.value; let percentage = 0.5; if (currentValueStr === undefined || currentValueStr === null) return 0.5; if (steps) { const numSteps = steps.length; const stepIndex = parseInt(currentValueStr); percentage = numSteps > 1 ? stepIndex / (numSteps - 1) : 0.5; } else { let currentValue = parseFloat(knob.dataset.actualValue || currentValueStr); if (isLog) { if (currentValue <= min) percentage = 0; else if (currentValue >= max) percentage = 1; else percentage = Math.log(currentValue / min) / Math.log(max / min); } else { const range = max - min; percentage = range > 0 ? (currentValue - min) / range : 0.5; } } return Math.max(0, Math.min(1, isNaN(percentage) ? 0.5 : percentage)); }
+        function handleKnobArrowKey(knob, direction, isShift) { const steps = knob.dataset.steps ? knob.dataset.steps.split(',') : null; const min = parseFloat(knob.dataset.min); const max = parseFloat(knob.dataset.max); const isLog = knob.dataset.curve === 'log' && min > 0; let currentPercentage = getKnobPercentage(knob); let newValue; if (steps) { const numSteps = steps.length; let currentStepIndex = Math.round(currentPercentage * (numSteps - 1)); let stepChange = direction * (isShift ? 2 : 1); newValue = Math.max(0, Math.min(numSteps - 1, currentStepIndex + stepChange)); } else { let percentageChange = direction * (isShift ? 0.1 : 0.01); let newPercentage = Math.max(0, Math.min(1, currentPercentage + percentageChange)); if (isLog) { newValue = min * Math.pow(max / min, newPercentage); } else { const range = max - min; newValue = min + newPercentage * range; } newValue = Math.max(min, Math.min(max, newValue)); } updateParameterFromKnob(knob, newValue); }
+        function handleKnobNumberKey(knob, number) { const steps = knob.dataset.steps ? knob.dataset.steps.split(',') : null; const min = parseFloat(knob.dataset.min); const max = parseFloat(knob.dataset.max); const isLog = knob.dataset.curve === 'log' && min > 0; let targetValue; if (steps) { const numSteps = steps.length; if (numSteps === 0) return; let targetIndex = (number === 0) ? numSteps - 1 : number - 1; targetValue = Math.max(0, Math.min(numSteps - 1, targetIndex)); } else { let currentActualValue = parseFloat(knob.dataset.actualValue || knob.dataset.value || '0'); const epsilon = 1e-7; let targetPercentage = (number === 0) ? (Math.abs(currentActualValue - min) < epsilon ? 1.0 : 0.0) : number / 10.0; if (isLog) { targetValue = min * Math.pow(max / min, targetPercentage); } else { const range = max - min; targetValue = min + targetPercentage * range; } targetValue = Math.max(min, Math.min(max, targetValue)); } updateParameterFromKnob(knob, targetValue); }
         // (Mouse Input for Knobs - unchanged)
-        let isDragging=false;let dragKnob=null;let startY=0;let startValuePercentage=0; function handleKnobMouseMove(e){if(!isDragging||!dragKnob)return;e.preventDefault();const currentY=e.clientY;const deltaY=startY-currentY;const steps=dragKnob.dataset.steps?dragKnob.dataset.steps.split(','):null;const min=parseFloat(dragKnob.dataset.min);const max=parseFloat(dragKnob.dataset.max);const isLog=dragKnob.dataset.curve==='log'&&min>0;let newValue;if(steps){const pixelsPerStep=20;const totalSteps=steps.length;if(totalSteps<=1)return;const totalDragPixelsForRange=pixelsPerStep*(totalSteps-1);const percentageChange=totalDragPixelsForRange>0?(deltaY/totalDragPixelsForRange):0;let newPercentage=Math.max(0,Math.min(1,startValuePercentage+percentageChange));newValue=Math.round(newPercentage*(totalSteps-1));}else{const dragRangePixels=150;const deltaPercentage=deltaY/dragRangePixels;let newPercentage=Math.max(0,Math.min(1,startValuePercentage+deltaPercentage));if(isLog){const epsilon=1e-9;const clampedPercentage=Math.max(epsilon,Math.min(1-epsilon,newPercentage));if(min>0&&max>min)newValue=min*Math.pow(max/min,clampedPercentage);else newValue=(newPercentage>0.5)?max:min;}else{const range=max-min;newValue=min+newPercentage*range;}newValue=Math.max(min,Math.min(max,newValue));}let currentValueInDataStr=dragKnob.dataset.value;const tolerance=1e-6;if(steps){if(newValue!==parseInt(currentValueInDataStr)){updateParameterFromKnob(dragKnob,newValue);}}else{if(Math.abs(newValue-parseFloat(currentValueInDataStr))>tolerance){updateParameterFromKnob(dragKnob,newValue);}}}
-        function stopDrag(){if(isDragging&&dragKnob){dragKnob.closest('.control-group')?.classList.remove('interacting');}if(isDragging){isDragging=false;dragKnob=null;document.body.classList.remove('dragging');document.removeEventListener('mousemove',handleKnobMouseMove);document.removeEventListener('mouseup',stopDrag);document.removeEventListener('mouseleave',stopDrag);}} function setupKnobListeners(){if(!knobs)knobs=drumMachinePanel.querySelectorAll('.knob');knobs.forEach(knob=>{const controlGroup=knob.closest('.control-group');const isStepped=knob.hasAttribute('data-steps');const valueDisplayId=knob.id+'-value';const valueDisplay=document.getElementById(valueDisplayId);if(!isStepped&&valueDisplay){knob.addEventListener('focus',()=>{const currentVal=parseFloat(knob.dataset.actualValue||knob.dataset.value||'0');updateKnobValueDisplay(knob,currentVal);valueDisplay.style.display='inline-block';});knob.addEventListener('blur',()=>{if(!isDragging||dragKnob!==knob){valueDisplay.style.display='none';}controlGroup?.classList.remove('interacting');});}knob.addEventListener('mousedown',async(e)=>{let canInteract=isAudioResumed;if(!canInteract&&isAudioInitialized)canInteract=await ensureAudioContextResumed();if(!isAudioInitialized||!canInteract)return;e.preventDefault();isDragging=true;dragKnob=knob;startY=e.clientY;startValuePercentage=getKnobPercentage(knob);knob.focus();controlGroup?.classList.add('interacting');if(!isStepped&&valueDisplay){const currentVal=parseFloat(knob.dataset.actualValue||knob.dataset.value||'0');updateKnobValueDisplay(knob,currentVal);valueDisplay.style.display='inline-block';}document.body.classList.add('dragging');document.addEventListener('mousemove',handleKnobMouseMove);document.addEventListener('mouseup',stopDrag);document.addEventListener('mouseleave',stopDrag);});knob.addEventListener('dblclick',async(e)=>{let canInteract=isAudioResumed;if(!canInteract&&isAudioInitialized)canInteract=await ensureAudioContextResumed();if(!isAudioInitialized||!canInteract)return;const defaultValueAttr=knob.getAttribute('data-value');if(defaultValueAttr!==null){updateParameterFromKnob(knob,defaultValueAttr);if(!isStepped&&valueDisplay){const defaultVal=parseFloat(defaultValueAttr);updateKnobValueDisplay(knob,defaultVal);}}});});}
+        let isDragging = false; let dragKnob = null; let startY = 0; let startValuePercentage = 0; function handleKnobMouseMove(e) { if (!isDragging || !dragKnob) return; e.preventDefault(); const currentY = e.clientY; const deltaY = startY - currentY; const steps = dragKnob.dataset.steps ? dragKnob.dataset.steps.split(',') : null; const min = parseFloat(dragKnob.dataset.min); const max = parseFloat(dragKnob.dataset.max); const isLog = dragKnob.dataset.curve === 'log' && min > 0; let newValue; if (steps) { const pixelsPerStep = 20; const totalSteps = steps.length; if (totalSteps <= 1) return; const totalDragPixelsForRange = pixelsPerStep * (totalSteps - 1); const percentageChange = totalDragPixelsForRange > 0 ? (deltaY / totalDragPixelsForRange) : 0; let newPercentage = Math.max(0, Math.min(1, startValuePercentage + percentageChange)); newValue = Math.round(newPercentage * (totalSteps - 1)); } else { const dragRangePixels = 150; const deltaPercentage = deltaY / dragRangePixels; let newPercentage = Math.max(0, Math.min(1, startValuePercentage + deltaPercentage)); if (isLog) { const epsilon = 1e-9; const clampedPercentage = Math.max(epsilon, Math.min(1 - epsilon, newPercentage)); if (min > 0 && max > min) newValue = min * Math.pow(max / min, clampedPercentage); else newValue = (newPercentage > 0.5) ? max : min; } else { const range = max - min; newValue = min + newPercentage * range; } newValue = Math.max(min, Math.min(max, newValue)); } let currentValueInDataStr = dragKnob.dataset.value; const tolerance = 1e-6; if (steps) { if (newValue !== parseInt(currentValueInDataStr)) { updateParameterFromKnob(dragKnob, newValue); } } else { if (Math.abs(newValue - parseFloat(currentValueInDataStr)) > tolerance) { updateParameterFromKnob(dragKnob, newValue); } } }
+        function stopDrag() { if (isDragging && dragKnob) { dragKnob.closest('.control-group')?.classList.remove('interacting'); } if (isDragging) { isDragging = false; dragKnob = null; document.body.classList.remove('dragging'); document.removeEventListener('mousemove', handleKnobMouseMove); document.removeEventListener('mouseup', stopDrag); document.removeEventListener('mouseleave', stopDrag); } } function setupKnobListeners() { if (!knobs) knobs = drumMachinePanel.querySelectorAll('.knob'); knobs.forEach(knob => { const controlGroup = knob.closest('.control-group'); const isStepped = knob.hasAttribute('data-steps'); const valueDisplayId = knob.id + '-value'; const valueDisplay = document.getElementById(valueDisplayId); if (!isStepped && valueDisplay) { knob.addEventListener('focus', () => { const currentVal = parseFloat(knob.dataset.actualValue || knob.dataset.value || '0'); updateKnobValueDisplay(knob, currentVal); valueDisplay.style.display = 'inline-block'; }); knob.addEventListener('blur', () => { if (!isDragging || dragKnob !== knob) { valueDisplay.style.display = 'none'; } controlGroup?.classList.remove('interacting'); }); } knob.addEventListener('mousedown', async (e) => { let canInteract = isAudioResumed; if (!canInteract && isAudioInitialized) canInteract = await ensureAudioContextResumed(); if (!isAudioInitialized || !canInteract) return; e.preventDefault(); isDragging = true; dragKnob = knob; startY = e.clientY; startValuePercentage = getKnobPercentage(knob); knob.focus(); controlGroup?.classList.add('interacting'); if (!isStepped && valueDisplay) { const currentVal = parseFloat(knob.dataset.actualValue || knob.dataset.value || '0'); updateKnobValueDisplay(knob, currentVal); valueDisplay.style.display = 'inline-block'; } document.body.classList.add('dragging'); document.addEventListener('mousemove', handleKnobMouseMove); document.addEventListener('mouseup', stopDrag); document.addEventListener('mouseleave', stopDrag); }); knob.addEventListener('dblclick', async (e) => { let canInteract = isAudioResumed; if (!canInteract && isAudioInitialized) canInteract = await ensureAudioContextResumed(); if (!isAudioInitialized || !canInteract) return; const defaultValueAttr = knob.getAttribute('data-value'); if (defaultValueAttr !== null) { updateParameterFromKnob(knob, defaultValueAttr); if (!isStepped && valueDisplay) { const defaultVal = parseFloat(defaultValueAttr); updateKnobValueDisplay(knob, defaultVal); } } }); }); }
 
         // --- Sequencer UI Event Listeners (unchanged) ---
         function handleSeqGridMouseDown(e) { if (!e.target.classList.contains('step-button')) return; e.preventDefault(); isDraggingSeqStep = true; const button = e.target; const voiceIndex = parseInt(button.dataset.voice); const stepIndex = parseInt(button.dataset.step); const initialState = getStepState(voiceIndex, stepIndex); const newState = !initialState; setStepState(voiceIndex, stepIndex, newState); dragSeqStepMode = newState ? 'activate' : 'deactivate'; dragSeqStepVoice = voiceIndex; document.addEventListener('mousemove', handleSeqGridMouseMove); document.addEventListener('mouseup', handleSeqGridMouseUp, { once: true }); }
@@ -932,7 +1004,7 @@
         function setupSequencerListeners() { playStopButton.addEventListener('click', togglePlayStop); resetButton.addEventListener('click', resetSequencer); tempoInput.addEventListener('change', (e) => { const newTempo = parseFloat(e.target.value); if (!isNaN(newTempo)) { updateTempo(newTempo); } else { tempoInput.value = sequencer.tempo; } }); tempoInput.addEventListener('input', (e) => { const currentVal = parseFloat(e.target.value); if (!isNaN(currentVal)) { sequencer.tempo = Math.max(30, Math.min(300, currentVal)); } }); sequencerGrid.addEventListener('mousedown', handleSeqGridMouseDown); }
 
         // -- General Interaction Listener for Audio Context -- (unchanged)
-        function setupGeneralInteractionListener(){drumMachinePanel.addEventListener('pointerdown',async()=>{if(!isAudioResumed&&isAudioInitialized){await ensureAudioContextResumed();}},{capture:true,once:true}); sequencerPanel.addEventListener('pointerdown',async()=>{if(!isAudioResumed&&isAudioInitialized){await ensureAudioContextResumed();}},{capture:true,once:true});}
+        function setupGeneralInteractionListener() { drumMachinePanel.addEventListener('pointerdown', async () => { if (!isAudioResumed && isAudioInitialized) { await ensureAudioContextResumed(); } }, { capture: true, once: true }); sequencerPanel.addEventListener('pointerdown', async () => { if (!isAudioResumed && isAudioInitialized) { await ensureAudioContextResumed(); } }, { capture: true, once: true }); }
 
         // --- INITIALIZATION ---
         document.addEventListener('DOMContentLoaded', async () => { // (unchanged)
