@@ -59,6 +59,55 @@
             cursor: ns-resize;
         }
 
+        .audio-gate {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.75);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .audio-gate.hidden {
+            display: none;
+        }
+
+        .audio-gate-card {
+            background: #111;
+            border: 1px solid var(--grey-medium);
+            border-radius: 10px;
+            padding: 22px 26px;
+            text-align: center;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+            max-width: 320px;
+        }
+
+        .audio-gate-card h3 {
+            margin: 0 0 10px;
+            letter-spacing: 0.2em;
+            font-size: 14px;
+            color: var(--grey-light);
+        }
+
+        .audio-gate-card p {
+            margin: 0 0 18px;
+            color: var(--grey-light);
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
+        .audio-gate-card button {
+            padding: 10px 16px;
+            background: var(--accent-color);
+            color: #000;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            letter-spacing: 0.1em;
+            cursor: pointer;
+        }
+
         h1 {
             font-size: 15px;
             color: var(--grey-light);
@@ -445,6 +494,14 @@
 
 <body>
 
+    <div id="audio-gate" class="audio-gate">
+        <div class="audio-gate-card">
+            <h3>Enable Audio</h3>
+            <p>Tap once to allow audio playback on your device.</p>
+            <button id="audio-gate-button">Tap to Start</button>
+        </div>
+    </div>
+
     <div class="header-area">
         <h1>AH DS-02</h1>
     </div>
@@ -724,6 +781,8 @@
         const resetButton = document.getElementById('reset-button');
         const stepIndicatorRow = document.getElementById('step-indicator-row');
         const sequencerGrid = document.getElementById('sequencer-grid');
+        const audioGate = document.getElementById('audio-gate');
+        const audioGateButton = document.getElementById('audio-gate-button');
         let stepButtons = []; // 2D array [voice][step]
         let stepIndicators = []; // Array of indicator divs
 
@@ -782,9 +841,104 @@
         function formatKnobValue(value, knobId) { if (typeof value !== 'number' || !isFinite(value)) return '---'; if (knobId) { if (knobId.includes('attack') || knobId.includes('decay') || knobId.includes('release') || knobId.includes('delay-time')) { return value < 1 ? (value * 1000).toFixed(0) + 'ms' : value.toFixed(2) + 's'; } else if (knobId.includes('pitch') || knobId.includes('cutoff')) { return value >= 1000 ? (value / 1000).toFixed(1) + 'k' : value.toFixed(0); } else if (knobId.includes('level') || knobId.includes('feedback') || knobId.includes('sustain') || knobId.includes('volume') || knobId.includes('reverb-level')) { return value.toFixed(2); } else if (knobId.includes('distortion-amount')) { return value.toFixed(0); } } return value.toFixed(2); }
         function updateKnobValueDisplay(knob, value) { if (knob && !knob.dataset.steps) { const displayId = knob.id + '-value'; const displayElement = document.getElementById(displayId); if (displayElement) { displayElement.textContent = formatKnobValue(value, knob.id); } } }
 
+        // ----- AUDIO UNLOCK HELPERS -----
+        function showAudioGate() {
+            if (audioGate) {
+                audioGate.classList.remove('hidden');
+            }
+        }
+
+        function hideAudioGate() {
+            if (audioGate) {
+                audioGate.classList.add('hidden');
+            }
+        }
+
+        function primeSilentPlayback(ctx) {
+            try {
+                const buffer = ctx.createBuffer(1, 1, ctx.sampleRate);
+                const source = ctx.createBufferSource();
+                source.buffer = buffer;
+                source.connect(ctx.destination);
+                source.start(0);
+                source.onended = () => {
+                    try { source.disconnect(); } catch { /* ignore */ }
+                };
+            } catch (e) {
+                console.warn("Silent prime failed:", e);
+            }
+        }
+
+        function unlockAudioContext(audioCtx) {
+            if (!audioCtx) return;
+            const events = ['touchstart', 'touchend', 'mousedown', 'keydown'];
+            const clean = () => {
+                events.forEach(event => document.body.removeEventListener(event, unlock, false));
+            };
+            const unlock = () => {
+                if (!audioCtx.state || audioCtx.state === 'suspended' || audioCtx.state === 'interrupted') {
+                    audioCtx.resume().then(() => {
+                        clean();
+                        primeSilentPlayback(audioCtx);
+                        masterGain?.gain.setValueAtTime(params.masterVolume, audioCtx.currentTime + 0.01);
+                        isAudioResumed = (audioCtx.state === 'running');
+                        if (isAudioResumed) hideAudioGate(); else showAudioGate();
+                    }).catch((e) => {
+                        console.warn("Audio resume blocked:", e);
+                        showAudioGate();
+                    });
+                } else {
+                    clean();
+                }
+            };
+            if (audioCtx.state === 'suspended' || audioCtx.state === 'interrupted' || !audioCtx.state) {
+                showAudioGate();
+                events.forEach(event => document.body.addEventListener(event, unlock, false));
+            } else if (audioCtx.state === 'running') {
+                isAudioResumed = true;
+                masterGain?.gain.setValueAtTime(params.masterVolume, audioCtx.currentTime + 0.01);
+                primeSilentPlayback(audioCtx);
+                hideAudioGate();
+            }
+        }
+
         // ----- AUDIO CONTEXT & INITIALIZATION -----
-        async function ensureAudioContextResumed() { // (unchanged)
-            if (!audioContext) return false; if (audioContext.state === 'running') { if (!isAudioResumed) { isAudioResumed = true; masterGain.gain.linearRampToValueAtTime(params.masterVolume, audioContext.currentTime + 0.05); } return true; } if (audioContext.state === 'suspended') { try { await audioContext.resume(); if (audioContext.state === 'running') { console.log("AudioContext Resumed."); isAudioResumed = true; masterGain.gain.linearRampToValueAtTime(params.masterVolume, audioContext.currentTime + 0.05); return true; } else { isAudioResumed = false; return false; } } catch (e) { console.error("Error resuming:", e); isAudioResumed = false; return false; } } return false;
+        async function ensureAudioContextResumed() {
+            if (!audioContext) return false;
+            const state = audioContext.state;
+            if (state === 'running') {
+                if (!isAudioResumed) {
+                    isAudioResumed = true;
+                    masterGain.gain.setValueAtTime(params.masterVolume, audioContext.currentTime + 0.005);
+                    primeSilentPlayback(audioContext);
+                }
+                hideAudioGate();
+                return true;
+            }
+            if (state === 'suspended' || state === 'interrupted') {
+                try {
+                    await audioContext.resume();
+                    if (audioContext.state === 'running') {
+                        console.log("AudioContext Resumed.");
+                        isAudioResumed = true;
+                        masterGain.gain.setValueAtTime(params.masterVolume, audioContext.currentTime + 0.005);
+                        primeSilentPlayback(audioContext);
+                        hideAudioGate();
+                        return true;
+                    } else {
+                        isAudioResumed = false;
+                        showAudioGate();
+                        return false;
+                    }
+                } catch (e) {
+                    console.error("Error resuming:", e);
+                    isAudioResumed = false;
+                    showAudioGate();
+                    return false;
+                }
+            }
+            showAudioGate();
+            return false;
         }
 
         // --- REVISED initAudio ---
@@ -794,6 +948,7 @@
             try {
                 audioContext = new (window.AudioContext || window.webkitAudioContext)();
                 if (!audioContext) throw new Error("Web Audio API not supported.");
+                unlockAudioContext(audioContext);
                 isAudioInitialized = true;
                 console.log("Initial State:", audioContext.state);
 
@@ -898,9 +1053,11 @@
                 if (audioContext.state === 'running') {
                     isAudioResumed = true;
                     masterGain.gain.value = params.masterVolume; // Set initial volume directly if already running
+                    hideAudioGate();
                 } else {
                     isAudioResumed = false;
                     console.log("Context suspended. Interaction needed to start audio.");
+                    showAudioGate();
                 }
 
             } catch (e) {
@@ -969,7 +1126,7 @@
         // (scheduleNotes, sequencerScheduler, playSequencer, stopSequencer, togglePlayStop, updateTempo, resetSequencer - unchanged)
         function scheduleNotes(currentStep, currentTime) { sequencer.stepDuration = 60.0 / sequencer.tempo / 4.0; while (sequencer.nextStepTime < currentTime + sequencer.scheduleAheadTime) { const stepIndex = sequencer.currentStep; const stepTime = sequencer.nextStepTime; for (let voiceIndex = 0; voiceIndex < NUM_VOICES; voiceIndex++) { if (sequencer.steps[voiceIndex][stepIndex] === 1) { triggerDrumSound(voiceIndex, stepTime); } } updateStepIndicator(stepIndex); sequencer.nextStepTime += sequencer.stepDuration; sequencer.currentStep = (sequencer.currentStep + 1) % NUM_STEPS; } }
         function sequencerScheduler() { if (!sequencer.isPlaying) return; const currentTime = audioContext.currentTime; scheduleNotes(sequencer.currentStep, currentTime); sequencer.timerId = setTimeout(sequencerScheduler, sequencer.lookahead); }
-        function playSequencer() { if (!isAudioInitialized || !isAudioResumed) { console.warn("Audio not ready, cannot start sequencer."); ensureAudioContextResumed().then(resumed => { if (resumed) playSequencer(); }); return; } if (sequencer.isPlaying) return; sequencer.isPlaying = true; sequencer.currentStep = 0; sequencer.nextStepTime = audioContext.currentTime + 0.05; sequencerScheduler(); playStopButton.textContent = "⏹"; playStopButton.classList.add("playing"); }
+        function playSequencer() { if (!isAudioInitialized || !isAudioResumed) { console.warn("Audio not ready, cannot start sequencer."); ensureAudioReady().then(resumed => { if (resumed) playSequencer(); }); return; } if (sequencer.isPlaying) return; sequencer.isPlaying = true; sequencer.currentStep = 0; sequencer.nextStepTime = audioContext.currentTime + 0.05; sequencerScheduler(); playStopButton.textContent = "⏹"; playStopButton.classList.add("playing"); }
         function stopSequencer() { if (!sequencer.isPlaying) return; sequencer.isPlaying = false; clearTimeout(sequencer.timerId); sequencer.timerId = null; playStopButton.textContent = "▶︎"; playStopButton.classList.remove("playing"); clearStepIndicators(); }
         function togglePlayStop() { if (sequencer.isPlaying) { stopSequencer(); } else { playSequencer(); } }
         function updateTempo(newTempo) { const clampedTempo = Math.max(30, Math.min(300, newTempo)); sequencer.tempo = clampedTempo; tempoInput.value = clampedTempo; }
@@ -988,14 +1145,14 @@
 
         // ----- EVENT LISTENERS -----
         // (Keyboard listener - unchanged)
-        document.addEventListener('keydown', async (e) => { if (e.repeat || e.metaKey || e.ctrlKey || e.altKey) return; if (e.code === 'Space') { e.preventDefault(); togglePlayStop(); return; } const voiceIndex = keyToVoiceIndex[e.code]; if (voiceIndex !== undefined) { e.preventDefault(); let canPlay = isAudioResumed; if (!canPlay && isAudioInitialized) canPlay = await ensureAudioContextResumed(); if (canPlay) { triggerDrumSound(voiceIndex, audioContext.currentTime); const light = indicatorLights[voiceIndex]; if (light) { light.classList.add('active'); setTimeout(() => light.classList.remove('active'), 100); } } else { console.warn("Audio context not running for manual trigger."); } return; } if (document.activeElement && document.activeElement.classList.contains('knob')) { const focusedKnob = document.activeElement; if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { e.preventDefault(); handleKnobArrowKey(focusedKnob, e.key === 'ArrowLeft' ? -1 : 1, e.shiftKey); } else if (e.key >= '0' && e.key <= '9') { e.preventDefault(); handleKnobNumberKey(focusedKnob, parseInt(e.key, 10)); } } });
+        document.addEventListener('keydown', async (e) => { if (e.repeat || e.metaKey || e.ctrlKey || e.altKey) return; if (e.code === 'Space') { e.preventDefault(); togglePlayStop(); return; } const voiceIndex = keyToVoiceIndex[e.code]; if (voiceIndex !== undefined) { e.preventDefault(); let canPlay = isAudioResumed; if (!canPlay) canPlay = await ensureAudioReady(); if (canPlay) { triggerDrumSound(voiceIndex, audioContext.currentTime); const light = indicatorLights[voiceIndex]; if (light) { light.classList.add('active'); setTimeout(() => light.classList.remove('active'), 100); } } else { console.warn("Audio context not running for manual trigger."); } return; } if (document.activeElement && document.activeElement.classList.contains('knob')) { const focusedKnob = document.activeElement; if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { e.preventDefault(); handleKnobArrowKey(focusedKnob, e.key === 'ArrowLeft' ? -1 : 1, e.shiftKey); } else if (e.key >= '0' && e.key <= '9') { e.preventDefault(); handleKnobNumberKey(focusedKnob, parseInt(e.key, 10)); } } });
         // (Knob Keyboard Control Helpers - unchanged)
         function getKnobPercentage(knob) { const min = parseFloat(knob.dataset.min); const max = parseFloat(knob.dataset.max); const steps = knob.dataset.steps ? knob.dataset.steps.split(',') : null; const isLog = knob.dataset.curve === 'log' && min > 0; let currentValueStr = knob.dataset.value; let percentage = 0.5; if (currentValueStr === undefined || currentValueStr === null) return 0.5; if (steps) { const numSteps = steps.length; const stepIndex = parseInt(currentValueStr); percentage = numSteps > 1 ? stepIndex / (numSteps - 1) : 0.5; } else { let currentValue = parseFloat(knob.dataset.actualValue || currentValueStr); if (isLog) { if (currentValue <= min) percentage = 0; else if (currentValue >= max) percentage = 1; else percentage = Math.log(currentValue / min) / Math.log(max / min); } else { const range = max - min; percentage = range > 0 ? (currentValue - min) / range : 0.5; } } return Math.max(0, Math.min(1, isNaN(percentage) ? 0.5 : percentage)); }
         function handleKnobArrowKey(knob, direction, isShift) { const steps = knob.dataset.steps ? knob.dataset.steps.split(',') : null; const min = parseFloat(knob.dataset.min); const max = parseFloat(knob.dataset.max); const isLog = knob.dataset.curve === 'log' && min > 0; let currentPercentage = getKnobPercentage(knob); let newValue; if (steps) { const numSteps = steps.length; let currentStepIndex = Math.round(currentPercentage * (numSteps - 1)); let stepChange = direction * (isShift ? 2 : 1); newValue = Math.max(0, Math.min(numSteps - 1, currentStepIndex + stepChange)); } else { let percentageChange = direction * (isShift ? 0.1 : 0.01); let newPercentage = Math.max(0, Math.min(1, currentPercentage + percentageChange)); if (isLog) { newValue = min * Math.pow(max / min, newPercentage); } else { const range = max - min; newValue = min + newPercentage * range; } newValue = Math.max(min, Math.min(max, newValue)); } updateParameterFromKnob(knob, newValue); }
         function handleKnobNumberKey(knob, number) { const steps = knob.dataset.steps ? knob.dataset.steps.split(',') : null; const min = parseFloat(knob.dataset.min); const max = parseFloat(knob.dataset.max); const isLog = knob.dataset.curve === 'log' && min > 0; let targetValue; if (steps) { const numSteps = steps.length; if (numSteps === 0) return; let targetIndex = (number === 0) ? numSteps - 1 : number - 1; targetValue = Math.max(0, Math.min(numSteps - 1, targetIndex)); } else { let currentActualValue = parseFloat(knob.dataset.actualValue || knob.dataset.value || '0'); const epsilon = 1e-7; let targetPercentage = (number === 0) ? (Math.abs(currentActualValue - min) < epsilon ? 1.0 : 0.0) : number / 10.0; if (isLog) { targetValue = min * Math.pow(max / min, targetPercentage); } else { const range = max - min; targetValue = min + targetPercentage * range; } targetValue = Math.max(min, Math.min(max, targetValue)); } updateParameterFromKnob(knob, targetValue); }
         // (Mouse Input for Knobs - unchanged)
         let isDragging = false; let dragKnob = null; let startY = 0; let startValuePercentage = 0; function handleKnobMouseMove(e) { if (!isDragging || !dragKnob) return; e.preventDefault(); const currentY = e.clientY; const deltaY = startY - currentY; const steps = dragKnob.dataset.steps ? dragKnob.dataset.steps.split(',') : null; const min = parseFloat(dragKnob.dataset.min); const max = parseFloat(dragKnob.dataset.max); const isLog = dragKnob.dataset.curve === 'log' && min > 0; let newValue; if (steps) { const pixelsPerStep = 20; const totalSteps = steps.length; if (totalSteps <= 1) return; const totalDragPixelsForRange = pixelsPerStep * (totalSteps - 1); const percentageChange = totalDragPixelsForRange > 0 ? (deltaY / totalDragPixelsForRange) : 0; let newPercentage = Math.max(0, Math.min(1, startValuePercentage + percentageChange)); newValue = Math.round(newPercentage * (totalSteps - 1)); } else { const dragRangePixels = 150; const deltaPercentage = deltaY / dragRangePixels; let newPercentage = Math.max(0, Math.min(1, startValuePercentage + deltaPercentage)); if (isLog) { const epsilon = 1e-9; const clampedPercentage = Math.max(epsilon, Math.min(1 - epsilon, newPercentage)); if (min > 0 && max > min) newValue = min * Math.pow(max / min, clampedPercentage); else newValue = (newPercentage > 0.5) ? max : min; } else { const range = max - min; newValue = min + newPercentage * range; } newValue = Math.max(min, Math.min(max, newValue)); } let currentValueInDataStr = dragKnob.dataset.value; const tolerance = 1e-6; if (steps) { if (newValue !== parseInt(currentValueInDataStr)) { updateParameterFromKnob(dragKnob, newValue); } } else { if (Math.abs(newValue - parseFloat(currentValueInDataStr)) > tolerance) { updateParameterFromKnob(dragKnob, newValue); } } }
-        function stopDrag() { if (isDragging && dragKnob) { dragKnob.closest('.control-group')?.classList.remove('interacting'); } if (isDragging) { isDragging = false; dragKnob = null; document.body.classList.remove('dragging'); document.removeEventListener('mousemove', handleKnobMouseMove); document.removeEventListener('mouseup', stopDrag); document.removeEventListener('mouseleave', stopDrag); } } function setupKnobListeners() { if (!knobs) knobs = drumMachinePanel.querySelectorAll('.knob'); knobs.forEach(knob => { const controlGroup = knob.closest('.control-group'); const isStepped = knob.hasAttribute('data-steps'); const valueDisplayId = knob.id + '-value'; const valueDisplay = document.getElementById(valueDisplayId); if (!isStepped && valueDisplay) { knob.addEventListener('focus', () => { const currentVal = parseFloat(knob.dataset.actualValue || knob.dataset.value || '0'); updateKnobValueDisplay(knob, currentVal); valueDisplay.style.display = 'inline-block'; }); knob.addEventListener('blur', () => { if (!isDragging || dragKnob !== knob) { valueDisplay.style.display = 'none'; } controlGroup?.classList.remove('interacting'); }); } knob.addEventListener('mousedown', async (e) => { let canInteract = isAudioResumed; if (!canInteract && isAudioInitialized) canInteract = await ensureAudioContextResumed(); if (!isAudioInitialized || !canInteract) return; e.preventDefault(); isDragging = true; dragKnob = knob; startY = e.clientY; startValuePercentage = getKnobPercentage(knob); knob.focus(); controlGroup?.classList.add('interacting'); if (!isStepped && valueDisplay) { const currentVal = parseFloat(knob.dataset.actualValue || knob.dataset.value || '0'); updateKnobValueDisplay(knob, currentVal); valueDisplay.style.display = 'inline-block'; } document.body.classList.add('dragging'); document.addEventListener('mousemove', handleKnobMouseMove); document.addEventListener('mouseup', stopDrag); document.addEventListener('mouseleave', stopDrag); }); knob.addEventListener('dblclick', async (e) => { let canInteract = isAudioResumed; if (!canInteract && isAudioInitialized) canInteract = await ensureAudioContextResumed(); if (!isAudioInitialized || !canInteract) return; const defaultValueAttr = knob.getAttribute('data-value'); if (defaultValueAttr !== null) { updateParameterFromKnob(knob, defaultValueAttr); if (!isStepped && valueDisplay) { const defaultVal = parseFloat(defaultValueAttr); updateKnobValueDisplay(knob, defaultVal); } } }); }); }
+        function stopDrag() { if (isDragging && dragKnob) { dragKnob.closest('.control-group')?.classList.remove('interacting'); } if (isDragging) { isDragging = false; dragKnob = null; document.body.classList.remove('dragging'); document.removeEventListener('mousemove', handleKnobMouseMove); document.removeEventListener('mouseup', stopDrag); document.removeEventListener('mouseleave', stopDrag); } } function setupKnobListeners() { if (!knobs) knobs = drumMachinePanel.querySelectorAll('.knob'); knobs.forEach(knob => { const controlGroup = knob.closest('.control-group'); const isStepped = knob.hasAttribute('data-steps'); const valueDisplayId = knob.id + '-value'; const valueDisplay = document.getElementById(valueDisplayId); if (!isStepped && valueDisplay) { knob.addEventListener('focus', () => { const currentVal = parseFloat(knob.dataset.actualValue || knob.dataset.value || '0'); updateKnobValueDisplay(knob, currentVal); valueDisplay.style.display = 'inline-block'; }); knob.addEventListener('blur', () => { if (!isDragging || dragKnob !== knob) { valueDisplay.style.display = 'none'; } controlGroup?.classList.remove('interacting'); }); } knob.addEventListener('mousedown', async (e) => { let canInteract = isAudioResumed; if (!canInteract) canInteract = await ensureAudioReady(); if (!canInteract) return; e.preventDefault(); isDragging = true; dragKnob = knob; startY = e.clientY; startValuePercentage = getKnobPercentage(knob); knob.focus(); controlGroup?.classList.add('interacting'); if (!isStepped && valueDisplay) { const currentVal = parseFloat(knob.dataset.actualValue || knob.dataset.value || '0'); updateKnobValueDisplay(knob, currentVal); valueDisplay.style.display = 'inline-block'; } document.body.classList.add('dragging'); document.addEventListener('mousemove', handleKnobMouseMove); document.addEventListener('mouseup', stopDrag); document.addEventListener('mouseleave', stopDrag); }); knob.addEventListener('dblclick', async (e) => { let canInteract = isAudioResumed; if (!canInteract) canInteract = await ensureAudioReady(); if (!canInteract) return; const defaultValueAttr = knob.getAttribute('data-value'); if (defaultValueAttr !== null) { updateParameterFromKnob(knob, defaultValueAttr); if (!isStepped && valueDisplay) { const defaultVal = parseFloat(defaultValueAttr); updateKnobValueDisplay(knob, defaultVal); } } }); }); }
 
         // --- Sequencer UI Event Listeners (unchanged) ---
         function handleSeqGridMouseDown(e) { if (!e.target.classList.contains('step-button')) return; e.preventDefault(); isDraggingSeqStep = true; const button = e.target; const voiceIndex = parseInt(button.dataset.voice); const stepIndex = parseInt(button.dataset.step); const initialState = getStepState(voiceIndex, stepIndex); const newState = !initialState; setStepState(voiceIndex, stepIndex, newState); dragSeqStepMode = newState ? 'activate' : 'deactivate'; dragSeqStepVoice = voiceIndex; document.addEventListener('mousemove', handleSeqGridMouseMove); document.addEventListener('mouseup', handleSeqGridMouseUp, { once: true }); }
@@ -1004,11 +1161,32 @@
         function setupSequencerListeners() { playStopButton.addEventListener('click', togglePlayStop); resetButton.addEventListener('click', resetSequencer); tempoInput.addEventListener('change', (e) => { const newTempo = parseFloat(e.target.value); if (!isNaN(newTempo)) { updateTempo(newTempo); } else { tempoInput.value = sequencer.tempo; } }); tempoInput.addEventListener('input', (e) => { const currentVal = parseFloat(e.target.value); if (!isNaN(currentVal)) { sequencer.tempo = Math.max(30, Math.min(300, currentVal)); } }); sequencerGrid.addEventListener('mousedown', handleSeqGridMouseDown); }
 
         // -- General Interaction Listener for Audio Context -- (unchanged)
-        function setupGeneralInteractionListener() { drumMachinePanel.addEventListener('pointerdown', async () => { if (!isAudioResumed && isAudioInitialized) { await ensureAudioContextResumed(); } }, { capture: true, once: true }); sequencerPanel.addEventListener('pointerdown', async () => { if (!isAudioResumed && isAudioInitialized) { await ensureAudioContextResumed(); } }, { capture: true, once: true }); }
+        function setupGeneralInteractionListener() { drumMachinePanel.addEventListener('pointerdown', async () => { if (!isAudioResumed) { await ensureAudioReady(); } }, { capture: true, once: true }); sequencerPanel.addEventListener('pointerdown', async () => { if (!isAudioResumed) { await ensureAudioReady(); } }, { capture: true, once: true }); }
+
+        // --- Audio Gate Button ---
+        if (audioGateButton) {
+            audioGateButton.addEventListener('click', async () => {
+                await ensureAudioReady();
+            });
+        }
+
+        async function ensureAudioReady() {
+            if (!isAudioInitialized) {
+                await initAudio();
+            }
+            return ensureAudioContextResumed();
+        }
 
         // --- INITIALIZATION ---
-        document.addEventListener('DOMContentLoaded', async () => { // (unchanged)
-            knobs = drumMachinePanel.querySelectorAll('.knob'); createSequencerGridUI(); await initAudio(); if (isAudioInitialized) { updateAllKnobs(true); setupKnobListeners(); setupSequencerListeners(); setupGeneralInteractionListener(); console.log("JS Drum Synth Ready. Press A/S/D/F to play manually, Spacebar for sequencer."); if (audioContext?.state === 'suspended') { console.warn("REMINDER: Click panel or press key/space to enable audio."); } } else { console.error("Drum Synth initialization failed."); }
+        document.addEventListener('DOMContentLoaded', () => {
+            knobs = drumMachinePanel.querySelectorAll('.knob');
+            createSequencerGridUI();
+            updateAllKnobs(true);
+            setupKnobListeners();
+            setupSequencerListeners();
+            setupGeneralInteractionListener();
+            showAudioGate();
+            console.log("JS Drum Synth Ready. Tap to enable audio, then press A/S/D/F or Space.");
         });
 
     </script>
