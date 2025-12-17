@@ -116,23 +116,25 @@
         }
 
         h2 {
-            display: inline-block;
-            font-size: 12px;
+            display: flex;
+            font-size: 1rem;
             font-weight: normal;
             margin: 0;
             color: var(--grey-medium);
             text-align: center;
-            line-height: 15px;
-            width: 15px;
-            height: 15px;
+            width: 20px;
+            height: 20px;
             border-radius: 2px;
-            padding: 5px;
+            justify-content: center;
+            align-items: center;
             border: 1px solid var(--grey-dark);
         }
 
         .drum-machine-scroll-container {
             width: 100%;
             overflow-x: scroll;
+            display: flex;
+            justify-content: center;
         }
 
         .drum-machine-panel {
@@ -430,10 +432,7 @@
             display: grid;
             grid-template-columns: repeat(16, 1fr);
             gap: 4px;
-            /* Match button gap */
-            width: calc(100% - 20px);
-            /* Adjust width to align roughly */
-            max-width: 600px;
+            width: 100%;
             margin: 0 auto;
             margin-bottom: 8px;
         }
@@ -461,8 +460,7 @@
             display: grid;
             grid-template-columns: repeat(16, 1fr);
             gap: 4px;
-            width: calc(100% - 20px);
-            max-width: 600px;
+            width: 100%;
             margin: 0 auto;
         }
 
@@ -842,13 +840,22 @@
         function updateKnobValueDisplay(knob, value) { if (knob && !knob.dataset.steps) { const displayId = knob.id + '-value'; const displayElement = document.getElementById(displayId); if (displayElement) { displayElement.textContent = formatKnobValue(value, knob.id); } } }
 
         // ----- AUDIO UNLOCK HELPERS -----
+        let useAudioGate = true;
+
+        function isIOS() {
+            return /iP(hone|od|ad)/.test(navigator.platform || '') ||
+                ((navigator.userAgent || '').match(/Macintosh/) && 'ontouchend' in document);
+        }
+
         function showAudioGate() {
+            if (!useAudioGate) return;
             if (audioGate) {
                 audioGate.classList.remove('hidden');
             }
         }
 
         function hideAudioGate() {
+            if (!useAudioGate) return;
             if (audioGate) {
                 audioGate.classList.add('hidden');
             }
@@ -1179,14 +1186,21 @@
 
         // --- INITIALIZATION ---
         document.addEventListener('DOMContentLoaded', () => {
+            useAudioGate = isIOS(); // Only gate on iOS
             knobs = drumMachinePanel.querySelectorAll('.knob');
             createSequencerGridUI();
             updateAllKnobs(true);
             setupKnobListeners();
             setupSequencerListeners();
             setupGeneralInteractionListener();
-            showAudioGate();
-            console.log("JS Drum Synth Ready. Tap to enable audio, then press A/S/D/F or Space.");
+            if (useAudioGate) {
+                showAudioGate();
+                console.log("JS Drum Synth Ready. Tap to enable audio, then press A/S/D/F or Space.");
+            } else {
+                hideAudioGate();
+                ensureAudioReady();
+                console.log("JS Drum Synth Ready. Press A/S/D/F or Space.");
+            }
         });
 
     </script>
